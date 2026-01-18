@@ -1,0 +1,119 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  otp       String?
+  otpExpiry DateTime?
+  isPaused  Boolean  @default(false)
+
+  investments Investment[]
+  snapshots   Snapshot[]
+  goals       Goal[]
+  incomes     Income[]
+  expenses    Expense[]
+}
+
+model FundReference {
+  id          String   @id @default(uuid())
+  name        String
+  category    String
+  code        String? // Internal code if any
+  amfiCode    String? @unique // Official AMFI code for API
+
+  investments Investment[]
+}
+
+model Investment {
+  id              String   @id @default(uuid())
+  userId          String
+  type            String // "SIP", "LUMPSUM", "STOCK"
+  fundReferenceId String?
+  
+  name            String? // For Stocks or manual Fund entry
+  amount          Float
+  quantity        Float? // For Stocks
+  startDate       DateTime
+  averageBuyPrice Float? // For Stocks
+  
+  // New fields for Real-Time P&L
+  currentUnits    Float? // User entered units accumulated
+  currentInvestedAmount Float? // Total amount invested so far (for SIPs, etc)
+  amfiCode        String? // Store code directly on investment for easier lookup
+  tickerSymbol    String? // For Stocks (e.g. RELIANCE.NS)
+  lastSyncedAt    DateTime? // For automated unit syncing
+  stepUpPercentage Float? // Annual Step Up Percentage
+  interestRate    Float?   // For FD (Annual Interest Rate %)
+  maturityDate    DateTime? // For FD (Maturity Date)
+  
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fundReference   FundReference? @relation(fields: [fundReferenceId], references: [id])
+  
+  goalId          String?
+  goal            Goal?          @relation(fields: [goalId], references: [id])
+}
+
+model Snapshot {
+  id               String   @id @default(uuid())
+  userId           String
+  date             DateTime @default(now())
+  
+  totalMutualFunds Float
+  totalStocks      Float
+  totalCash        Float
+  totalNetWorth    Float
+  
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Goal {
+  id           String   @id @default(uuid())
+  userId       String
+  name         String
+  targetAmount Float
+  currentAmount Float   @default(0) // Manual progress or calculated
+  deadline     DateTime?
+  createdAt    DateTime @default(now())
+  
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  investments  Investment[]
+}
+
+model Income {
+  id          String   @id @default(uuid())
+  userId      String
+  date        DateTime
+  source      String   // Specific Payer (e.g. Upwork)
+  category    String   @default("Other") // Broad Category (e.g. Freelance)
+  amount      Float
+  paymentMode String   @default("ONLINE") // CASH, ONLINE
+  note        String?
+  createdAt   DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Expense {
+  id          String   @id @default(uuid())
+  userId      String
+  date        DateTime
+  category    String   // Food, Travel, etc.
+  shopName    String?  // Vendor/Store Name
+  amount      Float
+  paymentMode String   @default("ONLINE") // CASH, ONLINE
+  note        String?
+  createdAt   DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
