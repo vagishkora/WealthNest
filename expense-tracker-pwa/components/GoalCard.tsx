@@ -51,7 +51,7 @@ export function GoalCard({ goal }: { goal: GoalProps }) {
                     </div>
                 </div>
 
-                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                     <Link href={`/goals/edit/${goal.id}`} className="p-2 text-neutral-400 hover:text-white">
                         <Edit2 size={16} />
                     </Link>

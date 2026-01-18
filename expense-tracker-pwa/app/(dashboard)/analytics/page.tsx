@@ -53,11 +53,11 @@ export default async function AnalyticsPage() {
                     <NetWorthChart data={snapshots} />
                 </div> */}
 
-                {/* Monthly Income vs Expense */}
-                <MonthlyTrendChart expenses={expenses} incomes={incomes} />
+                {/* Monthly Income vs Expense - Removed by User Request */}
+                {/* <MonthlyTrendChart expenses={expenses} incomes={incomes} /> */}
 
-                {/* Expense Categories */}
-                <CategoryPieChart expenses={expenses} />
+                {/* Expense Categories - Removed by User Request */}
+                {/* <CategoryPieChart expenses={expenses} /> */}
             </div>
         </div>
     )

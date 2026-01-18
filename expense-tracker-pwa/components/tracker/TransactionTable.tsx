@@ -161,21 +161,19 @@ export function TransactionTable({ type, data }: TransactionTableProps) {
                     <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" suppressHydrationWarning />
 
                     <div className="grid grid-cols-2 md:grid-cols-12 gap-4 relative z-10" suppressHydrationWarning>
-                        {/* Date */}
-                        <div className="col-span-2 md:col-span-3" suppressHydrationWarning>
-                            <label className="text-[10px] uppercase text-neutral-500 font-bold mb-1 block pl-1" suppressHydrationWarning>Date</label>
+                            <label className="text-[10px] uppercase text-neutral-400 font-bold mb-1.5 block pl-1" suppressHydrationWarning>Date</label>
                             <input
                                 type="date"
                                 required
                                 value={date}
                                 onChange={(e) => setDate(e.target.value)}
-                                className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/20 transition"
+                                className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/20 transition"
                             />
                         </div>
 
                         {/* Source / Shop */}
                         <div className="col-span-2 md:col-span-3" suppressHydrationWarning>
-                            <label className="text-[10px] uppercase text-neutral-500 font-bold mb-1 block pl-1" suppressHydrationWarning>{type === 'INCOME' ? 'Payer' : 'Vendor'}</label>
+                            <label className="text-[10px] uppercase text-neutral-400 font-bold mb-1.5 block pl-1" suppressHydrationWarning>{type === 'INCOME' ? 'Payer' : 'Vendor'}</label>
                             {type === 'INCOME' ? (
                                 <input
                                     type="text"
@@ -183,7 +181,7 @@ export function TransactionTable({ type, data }: TransactionTableProps) {
                                     placeholder="e.g. Upwork"
                                     value={source}
                                     onChange={(e) => setSource(e.target.value)}
-                                    className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/20 transition placeholder:text-neutral-600"
+                                    className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/20 transition placeholder:text-neutral-600"
                                 />
                             ) : (
                                 <input
@@ -191,16 +189,16 @@ export function TransactionTable({ type, data }: TransactionTableProps) {
                                     placeholder="e.g. Starbucks"
                                     value={shopName}
                                     onChange={(e) => setShopName(e.target.value)}
-                                    className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/20 transition placeholder:text-neutral-600"
+                                    className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/20 transition placeholder:text-neutral-600"
                                 />
                             )}
                         </div>
 
                         {/* Amount */}
                         <div className="col-span-2 md:col-span-3" suppressHydrationWarning>
-                            <label className="text-[10px] uppercase text-neutral-500 font-bold mb-1 block pl-1" suppressHydrationWarning>Amount</label>
+                            <label className="text-[10px] uppercase text-neutral-400 font-bold mb-1.5 block pl-1" suppressHydrationWarning>Amount</label>
                             <div className="relative" suppressHydrationWarning>
-                                <span className="absolute left-3 top-2.5 text-neutral-500 text-xs" suppressHydrationWarning>₹</span>
+                                <span className="absolute left-3 top-3 text-neutral-500 text-sm" suppressHydrationWarning>₹</span>
                                 <input
                                     type="number"
                                     required
@@ -208,14 +206,14 @@ export function TransactionTable({ type, data }: TransactionTableProps) {
                                     placeholder="0.00"
                                     value={amount}
                                     onChange={(e) => setAmount(e.target.value)}
-                                    className="w-full bg-black/40 border border-white/10 rounded-xl pl-6 pr-3 py-2.5 text-xs text-white font-mono font-bold focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/20 transition placeholder:text-neutral-700"
+                                    className="w-full bg-black/40 border border-white/10 rounded-xl pl-7 pr-3 py-3 text-sm text-white font-mono font-bold focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/20 transition placeholder:text-neutral-700"
                                 />
                             </div>
                         </div>
 
                         {/* Category */}
                         <div className="col-span-2 md:col-span-3 relative" suppressHydrationWarning>
-                            <label className="text-[10px] uppercase text-neutral-500 font-bold mb-1 block pl-1" suppressHydrationWarning>Category</label>
+                            <label className="text-[10px] uppercase text-neutral-400 font-bold mb-1.5 block pl-1" suppressHydrationWarning>Category</label>
                             <input
                                 list={datalistId}
                                 type="text"
@@ -223,7 +221,7 @@ export function TransactionTable({ type, data }: TransactionTableProps) {
                                 placeholder="Select..."
                                 value={category}
                                 onChange={(e) => setCategory(e.target.value)}
-                                className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/20 transition placeholder:text-neutral-600"
+                                className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/20 transition placeholder:text-neutral-600"
                             />
                             <datalist id={datalistId} suppressHydrationWarning>
                                 {categories.map(cat => (
@@ -235,34 +233,34 @@ export function TransactionTable({ type, data }: TransactionTableProps) {
 
                     <div className="grid grid-cols-2 md:grid-cols-12 gap-4 relative z-10" suppressHydrationWarning>
                         <div className="col-span-2 md:col-span-3" suppressHydrationWarning>
-                            <label className="text-[10px] uppercase text-neutral-500 font-bold mb-1 block pl-1" suppressHydrationWarning>Mode</label>
+                            <label className="text-[10px] uppercase text-neutral-400 font-bold mb-1.5 block pl-1" suppressHydrationWarning>Mode</label>
                             <div className="relative" suppressHydrationWarning>
-                                <div className="absolute left-3 top-2.5 pointer-events-none text-neutral-500">
-                                    {paymentMode === 'CASH' ? <Banknote size={14} /> : <CreditCard size={14} />}
+                                <div className="absolute left-3 top-3 pointer-events-none text-neutral-500">
+                                    {paymentMode === 'CASH' ? <Banknote size={16} /> : <CreditCard size={16} />}
                                 </div>
                                 <select
                                     value={paymentMode}
                                     onChange={(e) => setPaymentMode(e.target.value)}
-                                    className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-3 py-2.5 text-xs text-white appearance-none focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/20 transition cursor-pointer"
+                                    className="w-full bg-black/40 border border-white/10 rounded-xl pl-10 pr-3 py-3 text-sm text-white appearance-none focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/20 transition cursor-pointer"
                                 >
                                     {PAYMENT_MODES.map(mode => (
                                         <option key={mode} value={mode}>{mode}</option>
                                     ))}
                                 </select>
-                                <div className="absolute right-3 top-3 pointer-events-none text-neutral-500" suppressHydrationWarning>
+                                <div className="absolute right-3 top-4 pointer-events-none text-neutral-500" suppressHydrationWarning>
                                     <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                                 </div>
                             </div>
                         </div>
 
                         <div className="col-span-2 md:col-span-6" suppressHydrationWarning>
-                            <label className="text-[10px] uppercase text-neutral-500 font-bold mb-1 block pl-1" suppressHydrationWarning>Note</label>
+                            <label className="text-[10px] uppercase text-neutral-400 font-bold mb-1.5 block pl-1" suppressHydrationWarning>Note</label>
                             <input
                                 type="text"
                                 placeholder="Optional description..."
                                 value={note}
                                 onChange={(e) => setNote(e.target.value)}
-                                className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/20 transition placeholder:text-neutral-600"
+                                className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/20 transition placeholder:text-neutral-600"
                             />
                         </div>
 
@@ -271,102 +269,103 @@ export function TransactionTable({ type, data }: TransactionTableProps) {
                                 type="submit"
                                 disabled={loading}
                                 className={cn(
-                                    "text-white rounded-xl px-4 py-2.5 text-xs font-bold w-full disabled:opacity-50 shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2",
+                                    "text-white rounded-xl px-4 py-3 text-sm font-bold w-full disabled:opacity-50 shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2",
                                     type === 'INCOME' ? "bg-gradient-to-r from-emerald-600 to-emerald-500 hover:brightness-110" : "bg-gradient-to-r from-rose-600 to-rose-500 hover:brightness-110"
                                 )}
                                 suppressHydrationWarning
                             >
-                                {editingId ? <Pencil size={16} /> : <Plus size={16} />}
+                                {editingId ? <Pencil size={18} /> : <Plus size={18} />}
                                 {editingId ? "Update Entry" : "Save Entry"}
                             </button>
                         </div>
                     </div>
                 </form>
-            )}
+    )
+}
 
-            {/* Data Table */}
-            <div className="flex-1 overflow-y-auto min-h-0 pr-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-white/20 transition-colors" suppressHydrationWarning>
-                <div className="min-w-[600px] text-xs pb-10" suppressHydrationWarning>
-                    <div className="grid grid-cols-12 text-[10px] uppercase tracking-widest text-neutral-500 px-4 pb-3 border-b border-white/5 font-bold sticky top-0 bg-[#0a0a0a]/95 backdrop-blur-md z-10 pt-2" suppressHydrationWarning>
-                        <div className="col-span-2 pl-2" suppressHydrationWarning>Date</div>
-                        <div className="col-span-4" suppressHydrationWarning>Details</div>
-                        <div className="col-span-2" suppressHydrationWarning>Mode</div>
-                        <div className="col-span-3 text-right pr-2" suppressHydrationWarning>Amount</div>
-                        <div className="col-span-1" suppressHydrationWarning></div>
-                    </div>
+{/* Data Table */ }
+<div className="flex-1 overflow-y-auto min-h-0 pr-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-white/20 transition-colors" suppressHydrationWarning>
+    <div className="min-w-[600px] text-xs pb-10" suppressHydrationWarning>
+        <div className="grid grid-cols-12 text-[10px] uppercase tracking-widest text-neutral-500 px-4 pb-3 border-b border-white/5 font-bold sticky top-0 bg-[#0a0a0a]/95 backdrop-blur-md z-10 pt-2" suppressHydrationWarning>
+            <div className="col-span-2 pl-2" suppressHydrationWarning>Date</div>
+            <div className="col-span-4" suppressHydrationWarning>Details</div>
+            <div className="col-span-2" suppressHydrationWarning>Mode</div>
+            <div className="col-span-3 text-right pr-2" suppressHydrationWarning>Amount</div>
+            <div className="col-span-1" suppressHydrationWarning></div>
+        </div>
 
-                    {data.length === 0 ? (
-                        <div className="text-center py-20 flex flex-col items-center justify-center opacity-40 hover:opacity-100 transition-opacity duration-500" suppressHydrationWarning>
-                            <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4" suppressHydrationWarning>
-                                <Tag size={24} className="text-neutral-500" />
-                            </div>
-                            <p className="text-neutral-500 font-medium" suppressHydrationWarning>No {type.toLowerCase()} found.</p>
-                            <p className="text-[10px] text-neutral-600 mt-1" suppressHydrationWarning>Add a new entry to get started.</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-1 mt-2" suppressHydrationWarning>
-                            {data.map((item, i) => (
-                                <div
-                                    key={item.id}
-                                    className="grid grid-cols-12 items-center px-2 py-3 rounded-xl hover:bg-white/5 transition duration-200 group border border-transparent hover:border-white/5 relative overflow-hidden"
-                                    suppressHydrationWarning
-                                    style={{ animationDelay: `${i * 50}ms` }}
-                                >
-                                    <div className="col-span-2 text-neutral-400 font-mono font-medium pl-2" suppressHydrationWarning>
-                                        <div className="flex flex-col" suppressHydrationWarning>
-                                            <span className="text-white text-xs font-bold" suppressHydrationWarning>{new Date(item.date).getDate()}</span>
-                                            <span className="text-[9px] uppercase tracking-wider text-neutral-500" suppressHydrationWarning>{new Date(item.date).toLocaleString('default', { month: 'short' })}</span>
-                                        </div>
-                                    </div>
-                                    <div className="col-span-4 text-white truncate pr-4" suppressHydrationWarning>
-                                        <div className="font-bold text-sm tracking-tight text-neutral-200 group-hover:text-white transition-colors" suppressHydrationWarning>
-                                            {type === 'INCOME' ? item.source : item.shopName || 'Unknown'}
-                                        </div>
-                                        <div className="flex items-center gap-2 mt-0.5" suppressHydrationWarning>
-                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-white/5 text-neutral-400 border border-white/5" suppressHydrationWarning>
-                                                {item.category}
-                                            </span>
-                                            {item.note && <span className="text-[10px] text-neutral-600 truncate max-w-[100px]" suppressHydrationWarning>{item.note}</span>}
-                                        </div>
-                                    </div>
-                                    <div className="col-span-2" suppressHydrationWarning>
-                                        <span className={cn(
-                                            "inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border opacity-70 group-hover:opacity-100 transition-opacity",
-                                            item.paymentMode === 'CASH'
-                                                ? "bg-amber-500/10 text-amber-500 border-amber-500/10"
-                                                : "bg-indigo-500/10 text-indigo-400 border-indigo-500/10"
-                                        )} suppressHydrationWarning>
-                                            {item.paymentMode === 'CASH' ? <Banknote size={10} /> : <CreditCard size={10} />}
-                                            {item.paymentMode}
-                                        </span>
-                                    </div>
-                                    <div className={cn("col-span-3 text-right font-mono font-bold text-sm tracking-tight pr-2",
-                                        type === 'INCOME' ? "text-emerald-400" : "text-rose-400"
-                                    )} suppressHydrationWarning>
-                                        {type === 'INCOME' ? '+' : '-'}{formatCurrency(item.amount)}
-                                    </div>
-                                    <div className="col-span-1 flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity" suppressHydrationWarning>
-                                        <button
-                                            onClick={() => handleEdit(item)}
-                                            className="text-neutral-500 hover:text-white p-1 rounded-full hover:bg-white/10 transition"
-                                            suppressHydrationWarning
-                                        >
-                                            <Pencil size={14} />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(item.id)}
-                                            className="text-neutral-500 hover:text-rose-500 p-1 rounded-full hover:bg-rose-500/10 transition"
-                                            suppressHydrationWarning
-                                        >
-                                            <Trash2 size={14} />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
+        {data.length === 0 ? (
+            <div className="text-center py-20 flex flex-col items-center justify-center opacity-40 hover:opacity-100 transition-opacity duration-500" suppressHydrationWarning>
+                <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4" suppressHydrationWarning>
+                    <Tag size={24} className="text-neutral-500" />
                 </div>
+                <p className="text-neutral-500 font-medium" suppressHydrationWarning>No {type.toLowerCase()} found.</p>
+                <p className="text-[10px] text-neutral-600 mt-1" suppressHydrationWarning>Add a new entry to get started.</p>
             </div>
+        ) : (
+            <div className="space-y-1 mt-2" suppressHydrationWarning>
+                {data.map((item, i) => (
+                    <div
+                        key={item.id}
+                        className="grid grid-cols-12 items-center px-2 py-3 rounded-xl hover:bg-white/5 transition duration-200 group border border-transparent hover:border-white/5 relative overflow-hidden"
+                        suppressHydrationWarning
+                        style={{ animationDelay: `${i * 50}ms` }}
+                    >
+                        <div className="col-span-2 text-neutral-400 font-mono font-medium pl-2" suppressHydrationWarning>
+                            <div className="flex flex-col" suppressHydrationWarning>
+                                <span className="text-white text-xs font-bold" suppressHydrationWarning>{new Date(item.date).getDate()}</span>
+                                <span className="text-[9px] uppercase tracking-wider text-neutral-500" suppressHydrationWarning>{new Date(item.date).toLocaleString('default', { month: 'short' })}</span>
+                            </div>
+                        </div>
+                        <div className="col-span-4 text-white truncate pr-4" suppressHydrationWarning>
+                            <div className="font-bold text-sm tracking-tight text-neutral-200 group-hover:text-white transition-colors" suppressHydrationWarning>
+                                {type === 'INCOME' ? item.source : item.shopName || 'Unknown'}
+                            </div>
+                            <div className="flex items-center gap-2 mt-0.5" suppressHydrationWarning>
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-white/5 text-neutral-400 border border-white/5" suppressHydrationWarning>
+                                    {item.category}
+                                </span>
+                                {item.note && <span className="text-[10px] text-neutral-600 truncate max-w-[100px]" suppressHydrationWarning>{item.note}</span>}
+                            </div>
+                        </div>
+                        <div className="col-span-2" suppressHydrationWarning>
+                            <span className={cn(
+                                "inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border opacity-70 group-hover:opacity-100 transition-opacity",
+                                item.paymentMode === 'CASH'
+                                    ? "bg-amber-500/10 text-amber-500 border-amber-500/10"
+                                    : "bg-indigo-500/10 text-indigo-400 border-indigo-500/10"
+                            )} suppressHydrationWarning>
+                                {item.paymentMode === 'CASH' ? <Banknote size={10} /> : <CreditCard size={10} />}
+                                {item.paymentMode}
+                            </span>
+                        </div>
+                        <div className={cn("col-span-3 text-right font-mono font-bold text-sm tracking-tight pr-2",
+                            type === 'INCOME' ? "text-emerald-400" : "text-rose-400"
+                        )} suppressHydrationWarning>
+                            {type === 'INCOME' ? '+' : '-'}{formatCurrency(item.amount)}
+                        </div>
+                        <div className="col-span-1 flex justify-end gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity" suppressHydrationWarning>
+                            <button
+                                onClick={() => handleEdit(item)}
+                                className="text-neutral-500 hover:text-white p-1 rounded-full hover:bg-white/10 transition"
+                                suppressHydrationWarning
+                            >
+                                <Pencil size={14} />
+                            </button>
+                            <button
+                                onClick={() => handleDelete(item.id)}
+                                className="text-neutral-500 hover:text-rose-500 p-1 rounded-full hover:bg-rose-500/10 transition"
+                                suppressHydrationWarning
+                            >
+                                <Trash2 size={14} />
+                            </button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        )}
+    </div>
+</div>
         </div >
     );
 }
