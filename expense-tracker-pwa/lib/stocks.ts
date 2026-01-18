@@ -1,6 +1,4 @@
-
-
-import { JSDOM } from 'jsdom';
+import * as cheerio from 'cheerio';
 
 export interface StockQuote {
     symbol: string;
@@ -93,14 +91,13 @@ export async function getStockDetails(symbol: string): Promise<StockDetails | nu
         if (!res.ok) return null;
 
         const html = await res.text();
-        const dom = new JSDOM(html);
-        const doc = dom.window.document;
+        const $ = cheerio.load(html);
 
-        console.log(`Page Title: ${doc.title}`);
-        // Google often sets title to "CompanyName Price - Google Finance"
+        const pageTitle = $('title').text();
+        console.log(`Page Title: ${pageTitle}`);
 
-        const priceEl = doc.querySelector(".YMlKec.fxKbKc");
-        const nameEl = doc.querySelector(".zzDege");
+        const priceEl = $(".YMlKec.fxKbKc");
+        const nameEl = $(".zzDege");
 
         let price = 0;
         let change = 0;
@@ -108,29 +105,26 @@ export async function getStockDetails(symbol: string): Promise<StockDetails | nu
         let name = symbol;
 
         // Strategy 1: Selectors (Best for Name)
-        if (priceEl) {
-            price = parseFloat(priceEl.textContent?.replace(/[^0-9.]/g, "") || "0");
+        if (priceEl.length) {
+            price = parseFloat(priceEl.text().replace(/[^0-9.]/g, "") || "0");
         }
-        if (nameEl) {
-            name = nameEl.textContent || symbol;
+        if (nameEl.length) {
+            name = nameEl.text() || symbol;
         } else {
-            const title = doc.title;
-            if (title.includes(" - Google Finance")) {
-                name = title.split(" - Google Finance")[0];
+            if (pageTitle.includes(" - Google Finance")) {
+                name = pageTitle.split(" - Google Finance")[0];
             }
         }
 
         // Strategy 2: Data Attributes (Reliable for Price)
-        const dataPriceEl = doc.querySelector('[data-last-price]');
-        if (dataPriceEl) {
-            const pStr = dataPriceEl.getAttribute('data-last-price');
+        const dataPriceEl = $('[data-last-price]');
+        if (dataPriceEl.length) {
+            const pStr = dataPriceEl.attr('data-last-price');
             const p = parseFloat(pStr || "0");
             if (p > 0) price = p;
 
             // Strategy 3: Dynamic Regex using the found price
-            // If we have price "161.01", look for [161.01, change, percent]
             if (pStr) {
-                // Escape dot in price for regex: 161.01 -> 161\.01
                 const escapedPrice = pStr.replace('.', '\\.');
                 const dynamicRegex = new RegExp(`\\[${escapedPrice},\\s*([+-]?\\d+(?:\\.\\d+)?),\\s*([+-]?\\d+(?:\\.\\d+)?)`);
                 const match = html.match(dynamicRegex);
@@ -154,7 +148,7 @@ export async function getStockDetails(symbol: string): Promise<StockDetails | nu
 
         // Strategy 5: Text Fallback (Last Resort)
         if (price === 0) {
-            const text = doc.body.textContent || "";
+            const text = $('body').text() || "";
             const currencyMatch = text.match(/[₹$]\s?([0-9,]+\.[0-9]{2})/);
             if (currencyMatch) {
                 price = parseFloat(currencyMatch[1].replace(/,/g, ""));
@@ -163,7 +157,7 @@ export async function getStockDetails(symbol: string): Promise<StockDetails | nu
 
         if (change === 0 && changePercent === 0) {
             // Fallback text regex for change
-            const text = doc.body.textContent || "";
+            const text = $('body').text() || "";
             const changeMatch = text.match(/\(([+-]?[0-9,]+\.[0-9]{2})%\)/);
             if (changeMatch) {
                 changePercent = parseFloat(changeMatch[1]);
