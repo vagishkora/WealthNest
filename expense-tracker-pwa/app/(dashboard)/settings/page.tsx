@@ -78,15 +78,15 @@ export default function SettingsPage() {
     }
 
     return (
-        <div className="p-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-neutral-900 via-neutral-950 to-black min-h-screen pb-32 text-white">
-            <header className="mb-8">
+        <div className="p-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-neutral-900 via-neutral-950 to-black min-h-screen pb-32 text-white flex flex-col items-center">
+            <header className="mb-8 text-center">
                 <h1 className="text-3xl font-bold">
                     <GradientText>Settings</GradientText>
                 </h1>
                 <p className="text-neutral-500 text-sm mt-1">Manage security and data</p>
             </header>
 
-            <div className="grid gap-6 max-w-2xl">
+            <div className="grid gap-6 max-w-2xl w-full">
                 {/* Security Section */}
                 <GlassCard className="p-6">
                     <div className="flex items-center gap-4 mb-6">
