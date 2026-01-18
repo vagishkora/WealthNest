@@ -347,17 +347,17 @@ export function TransactionTable({ type, data }: TransactionTableProps) {
                         <div className="col-span-1 flex justify-end gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity" suppressHydrationWarning>
                             <button
                                 onClick={() => handleEdit(item)}
-                                className="text-neutral-500 hover:text-white p-1 rounded-full hover:bg-white/10 transition"
+                                className="text-neutral-400 hover:text-white p-1 rounded-full hover:bg-white/10 transition"
                                 suppressHydrationWarning
                             >
-                                <Pencil size={14} />
+                                <Pencil size={16} />
                             </button>
                             <button
                                 onClick={() => handleDelete(item.id)}
-                                className="text-neutral-500 hover:text-rose-500 p-1 rounded-full hover:bg-rose-500/10 transition"
+                                className="text-neutral-400 hover:text-rose-500 p-1 rounded-full hover:bg-rose-500/10 transition"
                                 suppressHydrationWarning
                             >
-                                <Trash2 size={14} />
+                                <Trash2 size={16} />
                             </button>
                         </div>
                     </div>
