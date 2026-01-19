@@ -163,7 +163,7 @@ export function TransactionTable({ type, data }: TransactionTableProps) {
 
                     <div className="grid grid-cols-2 md:grid-cols-12 gap-4 relative z-10" suppressHydrationWarning>
                         {/* Date */}
-                        <div className="col-span-1 md:col-span-2">
+                        <div className="col-span-2 md:col-span-2">
                             <label className="text-[10px] uppercase text-neutral-400 font-bold mb-1.5 block pl-1">Date</label>
                             <input
                                 type="date"
@@ -175,7 +175,7 @@ export function TransactionTable({ type, data }: TransactionTableProps) {
                         </div>
 
                         {/* Amount */}
-                        <div className="col-span-1 md:col-span-2">
+                        <div className="col-span-2 md:col-span-2">
                             <label className="text-[10px] uppercase text-neutral-400 font-bold mb-1.5 block pl-1">Amount</label>
                             <div className="relative">
                                 <span className="absolute left-3 top-3 text-neutral-500 text-sm">₹</span>
