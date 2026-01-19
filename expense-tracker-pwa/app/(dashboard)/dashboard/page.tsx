@@ -17,6 +17,12 @@ export default async function DashboardPage() {
     const session = await auth()
     if (!session?.user?.id) return null
 
+    // Lazy Trigger: Attempt to send daily notifications (fire and forget)
+    // In production, use Vercel Cron. Locally, this simulates it on page load.
+    if (process.env.NODE_ENV === 'development') {
+        // fetch('http://localhost:3000/api/cron/daily-update').catch(() => {});
+    }
+
     const investments = await prisma.investment.findMany({
         where: { userId: session.user.id },
         include: { fundReference: true }

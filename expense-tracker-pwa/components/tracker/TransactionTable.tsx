@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useOptimistic } from "react";
 import { addIncome, addExpense, deleteTransaction, editIncome, editExpense } from "@/app/actions/tracker";
 import { Plus, Trash2, Tag, Calendar, Wallet, ShoppingBag, Banknote, CreditCard, Pencil } from "lucide-react";
 import { cn, formatCurrency } from "@/lib/utils";
@@ -43,6 +43,17 @@ export function TransactionTable({ type, data }: TransactionTableProps) {
     const datalistId = `categories-${type}`;
     const categories = type === 'INCOME' ? INCOMES : EXPENSES;
 
+    // Optimistic UI
+    const [optimisticData, setOptimisticData] = useOptimistic(
+        data,
+        (state, { action, payload }: { action: 'add' | 'edit' | 'delete', payload: any }) => {
+            if (action === 'add') return [payload, ...state].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+            if (action === 'edit') return state.map(t => t.id === payload.id ? payload : t);
+            if (action === 'delete') return state.filter(t => t.id !== payload);
+            return state;
+        }
+    );
+
     function handleEdit(item: Transaction) {
         setEditingId(item.id);
         const dateStr = new Date(item.date).toISOString().split('T')[0];
@@ -61,63 +72,51 @@ export function TransactionTable({ type, data }: TransactionTableProps) {
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        setLoading(true);
-        try {
-            // Append T12:00:00 to ensure the date stays on the correct day in almost all timezones
-            const dateObj = new Date(date + 'T12:00:00');
+        setLoading(true); // Keep loading for button state, but UI will update instantly
 
-            if (type === 'INCOME') {
-                if (editingId) {
-                    await editIncome(editingId, {
-                        amount: parseFloat(amount),
-                        source,
-                        category,
-                        paymentMode,
-                        date: dateObj,
-                        note
-                    });
-                } else {
-                    await addIncome({
-                        amount: parseFloat(amount),
-                        source,
-                        category,
-                        paymentMode,
-                        date: dateObj,
-                        note
-                    });
-                }
-            } else {
-                if (editingId) {
-                    await editExpense(editingId, {
-                        amount: parseFloat(amount),
-                        category,
-                        shopName,
-                        paymentMode,
-                        date: dateObj,
-                        note
-                    });
-                } else {
-                    await addExpense({
-                        amount: parseFloat(amount),
-                        category,
-                        shopName,
-                        paymentMode,
-                        date: dateObj,
-                        note
-                    });
-                }
-            }
+        const dateObj = new Date(date + 'T12:00:00');
+        const newItem: Transaction = {
+            id: editingId || Math.random().toString(), // Temp ID for new items
+            amount: parseFloat(amount),
+            category,
+            paymentMode,
+            date: dateObj,
+            note,
+            source: type === 'INCOME' ? source : undefined,
+            shopName: type === 'EXPENSE' ? shopName : undefined,
+        };
 
-            // Reset Form but keep date
+        // Optimistic Update
+        setOptimisticData({ action: editingId ? 'edit' : 'add', payload: newItem });
+
+        // Reset Form immediately for better UX
+        if (!editingId) {
             setAmount("");
             setNote("");
             setSource("");
             setShopName("");
-            setIsAdding(false);
-            setEditingId(null);
+            // Keep date, category, mode for rapid entry
+        }
+        setIsAdding(false);
+        setEditingId(null);
+
+        try {
+            if (type === 'INCOME') {
+                if (editingId) {
+                    await editIncome(editingId, newItem);
+                } else {
+                    await addIncome(newItem);
+                }
+            } else {
+                if (editingId) {
+                    await editExpense(editingId, newItem);
+                } else {
+                    await addExpense(newItem);
+                }
+            }
         } catch (error) {
             console.error(error);
-            alert("Failed to save. Please try again.");
+            alert("Failed to save. Please refresh.");
         } finally {
             setLoading(false);
         }
@@ -125,10 +124,12 @@ export function TransactionTable({ type, data }: TransactionTableProps) {
 
     async function handleDelete(id: string) {
         if (!confirm("Are you sure?")) return;
+        setOptimisticData({ action: 'delete', payload: id });
         try {
             await deleteTransaction(type, id);
         } catch (error) {
             console.error(error);
+            alert("Failed to delete.");
         }
     }
 
@@ -139,7 +140,7 @@ export function TransactionTable({ type, data }: TransactionTableProps) {
                     <span className={cn("text-xs font-bold px-2 py-1 rounded-md uppercase tracking-wider", type === 'INCOME' ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400")} suppressHydrationWarning>
                         {type}
                     </span>
-                    <span className="text-xs text-neutral-500" suppressHydrationWarning>{data.length} records</span>
+                    <span className="text-xs text-neutral-500" suppressHydrationWarning>{optimisticData.length} records</span>
                 </div>
                 <button
                     onClick={() => setIsAdding(!isAdding)}
@@ -157,11 +158,13 @@ export function TransactionTable({ type, data }: TransactionTableProps) {
 
             {/* Input Form */}
             {isAdding && (
-                <form onSubmit={handleSubmit} className="mb-6 bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10 space-y-4 animate-in fade-in slide-in-from-top-4 shadow-2xl relative overflow-hidden group" suppressHydrationWarning>
+                <form onSubmit={handleSubmit} className="mb-6 bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10 animate-in fade-in slide-in-from-top-4 shadow-2xl relative overflow-hidden group" suppressHydrationWarning>
                     <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" suppressHydrationWarning />
 
                     <div className="grid grid-cols-2 md:grid-cols-12 gap-4 relative z-10" suppressHydrationWarning>
-                            <label className="text-[10px] uppercase text-neutral-400 font-bold mb-1.5 block pl-1" suppressHydrationWarning>Date</label>
+                        {/* Date */}
+                        <div className="col-span-1 md:col-span-2">
+                            <label className="text-[10px] uppercase text-neutral-400 font-bold mb-1.5 block pl-1">Date</label>
                             <input
                                 type="date"
                                 required
@@ -171,9 +174,26 @@ export function TransactionTable({ type, data }: TransactionTableProps) {
                             />
                         </div>
 
-                        {/* Source / Shop */}
-                        <div className="col-span-2 md:col-span-3" suppressHydrationWarning>
-                            <label className="text-[10px] uppercase text-neutral-400 font-bold mb-1.5 block pl-1" suppressHydrationWarning>{type === 'INCOME' ? 'Payer' : 'Vendor'}</label>
+                        {/* Amount */}
+                        <div className="col-span-1 md:col-span-2">
+                            <label className="text-[10px] uppercase text-neutral-400 font-bold mb-1.5 block pl-1">Amount</label>
+                            <div className="relative">
+                                <span className="absolute left-3 top-3 text-neutral-500 text-sm">₹</span>
+                                <input
+                                    type="number"
+                                    required
+                                    step="0.01"
+                                    placeholder="0.00"
+                                    value={amount}
+                                    onChange={(e) => setAmount(e.target.value)}
+                                    className="w-full bg-black/40 border border-white/10 rounded-xl pl-7 pr-3 py-3 text-sm text-white font-mono font-bold focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/20 transition placeholder:text-neutral-700"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Vendor / Source */}
+                        <div className="col-span-2 md:col-span-3">
+                            <label className="text-[10px] uppercase text-neutral-400 font-bold mb-1.5 block pl-1">{type === 'INCOME' ? 'Payer' : 'Vendor'}</label>
                             {type === 'INCOME' ? (
                                 <input
                                     type="text"
@@ -194,26 +214,9 @@ export function TransactionTable({ type, data }: TransactionTableProps) {
                             )}
                         </div>
 
-                        {/* Amount */}
-                        <div className="col-span-2 md:col-span-3" suppressHydrationWarning>
-                            <label className="text-[10px] uppercase text-neutral-400 font-bold mb-1.5 block pl-1" suppressHydrationWarning>Amount</label>
-                            <div className="relative" suppressHydrationWarning>
-                                <span className="absolute left-3 top-3 text-neutral-500 text-sm" suppressHydrationWarning>₹</span>
-                                <input
-                                    type="number"
-                                    required
-                                    step="0.01"
-                                    placeholder="0.00"
-                                    value={amount}
-                                    onChange={(e) => setAmount(e.target.value)}
-                                    className="w-full bg-black/40 border border-white/10 rounded-xl pl-7 pr-3 py-3 text-sm text-white font-mono font-bold focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/20 transition placeholder:text-neutral-700"
-                                />
-                            </div>
-                        </div>
-
                         {/* Category */}
-                        <div className="col-span-2 md:col-span-3 relative" suppressHydrationWarning>
-                            <label className="text-[10px] uppercase text-neutral-400 font-bold mb-1.5 block pl-1" suppressHydrationWarning>Category</label>
+                        <div className="col-span-1 md:col-span-2 relative">
+                            <label className="text-[10px] uppercase text-neutral-400 font-bold mb-1.5 block pl-1">Category</label>
                             <input
                                 list={datalistId}
                                 type="text"
@@ -223,18 +226,18 @@ export function TransactionTable({ type, data }: TransactionTableProps) {
                                 onChange={(e) => setCategory(e.target.value)}
                                 className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/20 transition placeholder:text-neutral-600"
                             />
-                            <datalist id={datalistId} suppressHydrationWarning>
+                            <datalist id={datalistId}>
                                 {categories.map(cat => (
                                     <option key={cat} value={cat} />
                                 ))}
                             </datalist>
                         </div>
-                    </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-12 gap-4 relative z-10" suppressHydrationWarning>
-                        <div className="col-span-2 md:col-span-3" suppressHydrationWarning>
-                            <label className="text-[10px] uppercase text-neutral-400 font-bold mb-1.5 block pl-1" suppressHydrationWarning>Mode</label>
-                            <div className="relative" suppressHydrationWarning>
+
+                        {/* Mode */}
+                        <div className="col-span-1 md:col-span-3">
+                            <label className="text-[10px] uppercase text-neutral-400 font-bold mb-1.5 block pl-1">Mode</label>
+                            <div className="relative">
                                 <div className="absolute left-3 top-3 pointer-events-none text-neutral-500">
                                     {paymentMode === 'CASH' ? <Banknote size={16} /> : <CreditCard size={16} />}
                                 </div>
@@ -247,14 +250,12 @@ export function TransactionTable({ type, data }: TransactionTableProps) {
                                         <option key={mode} value={mode}>{mode}</option>
                                     ))}
                                 </select>
-                                <div className="absolute right-3 top-4 pointer-events-none text-neutral-500" suppressHydrationWarning>
-                                    <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                                </div>
                             </div>
                         </div>
 
-                        <div className="col-span-2 md:col-span-6" suppressHydrationWarning>
-                            <label className="text-[10px] uppercase text-neutral-400 font-bold mb-1.5 block pl-1" suppressHydrationWarning>Note</label>
+                        {/* Note - Full Width */}
+                        <div className="col-span-2 md:col-span-12">
+                            <label className="text-[10px] uppercase text-neutral-400 font-bold mb-1.5 block pl-1">Note</label>
                             <input
                                 type="text"
                                 placeholder="Optional description..."
@@ -264,7 +265,8 @@ export function TransactionTable({ type, data }: TransactionTableProps) {
                             />
                         </div>
 
-                        <div className="col-span-2 md:col-span-3 flex items-end" suppressHydrationWarning>
+                        {/* Submit Button */}
+                        <div className="col-span-2 md:col-span-12">
                             <button
                                 type="submit"
                                 disabled={loading}
@@ -272,7 +274,6 @@ export function TransactionTable({ type, data }: TransactionTableProps) {
                                     "text-white rounded-xl px-4 py-3 text-sm font-bold w-full disabled:opacity-50 shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2",
                                     type === 'INCOME' ? "bg-gradient-to-r from-emerald-600 to-emerald-500 hover:brightness-110" : "bg-gradient-to-r from-rose-600 to-rose-500 hover:brightness-110"
                                 )}
-                                suppressHydrationWarning
                             >
                                 {editingId ? <Pencil size={18} /> : <Plus size={18} />}
                                 {editingId ? "Update Entry" : "Save Entry"}
@@ -280,92 +281,91 @@ export function TransactionTable({ type, data }: TransactionTableProps) {
                         </div>
                     </div>
                 </form>
-    )
-}
+            )}
 
-{/* Data Table */ }
-<div className="flex-1 overflow-y-auto min-h-0 pr-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-white/20 transition-colors" suppressHydrationWarning>
-    <div className="min-w-[600px] text-xs pb-10" suppressHydrationWarning>
-        <div className="grid grid-cols-12 text-[10px] uppercase tracking-widest text-neutral-500 px-4 pb-3 border-b border-white/5 font-bold sticky top-0 bg-[#0a0a0a]/95 backdrop-blur-md z-10 pt-2" suppressHydrationWarning>
-            <div className="col-span-2 pl-2" suppressHydrationWarning>Date</div>
-            <div className="col-span-4" suppressHydrationWarning>Details</div>
-            <div className="col-span-2" suppressHydrationWarning>Mode</div>
-            <div className="col-span-3 text-right pr-2" suppressHydrationWarning>Amount</div>
-            <div className="col-span-1" suppressHydrationWarning></div>
-        </div>
-
-        {data.length === 0 ? (
-            <div className="text-center py-20 flex flex-col items-center justify-center opacity-40 hover:opacity-100 transition-opacity duration-500" suppressHydrationWarning>
-                <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4" suppressHydrationWarning>
-                    <Tag size={24} className="text-neutral-500" />
-                </div>
-                <p className="text-neutral-500 font-medium" suppressHydrationWarning>No {type.toLowerCase()} found.</p>
-                <p className="text-[10px] text-neutral-600 mt-1" suppressHydrationWarning>Add a new entry to get started.</p>
-            </div>
-        ) : (
-            <div className="space-y-1 mt-2" suppressHydrationWarning>
-                {data.map((item, i) => (
-                    <div
-                        key={item.id}
-                        className="grid grid-cols-12 items-center px-2 py-3 rounded-xl hover:bg-white/5 transition duration-200 group border border-transparent hover:border-white/5 relative overflow-hidden"
-                        suppressHydrationWarning
-                        style={{ animationDelay: `${i * 50}ms` }}
-                    >
-                        <div className="col-span-2 text-neutral-400 font-mono font-medium pl-2" suppressHydrationWarning>
-                            <div className="flex flex-col" suppressHydrationWarning>
-                                <span className="text-white text-xs font-bold" suppressHydrationWarning>{new Date(item.date).getDate()}</span>
-                                <span className="text-[9px] uppercase tracking-wider text-neutral-500" suppressHydrationWarning>{new Date(item.date).toLocaleString('default', { month: 'short' })}</span>
-                            </div>
-                        </div>
-                        <div className="col-span-4 text-white truncate pr-4" suppressHydrationWarning>
-                            <div className="font-bold text-sm tracking-tight text-neutral-200 group-hover:text-white transition-colors" suppressHydrationWarning>
-                                {type === 'INCOME' ? item.source : item.shopName || 'Unknown'}
-                            </div>
-                            <div className="flex items-center gap-2 mt-0.5" suppressHydrationWarning>
-                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-white/5 text-neutral-400 border border-white/5" suppressHydrationWarning>
-                                    {item.category}
-                                </span>
-                                {item.note && <span className="text-[10px] text-neutral-600 truncate max-w-[100px]" suppressHydrationWarning>{item.note}</span>}
-                            </div>
-                        </div>
-                        <div className="col-span-2" suppressHydrationWarning>
-                            <span className={cn(
-                                "inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border opacity-70 group-hover:opacity-100 transition-opacity",
-                                item.paymentMode === 'CASH'
-                                    ? "bg-amber-500/10 text-amber-500 border-amber-500/10"
-                                    : "bg-indigo-500/10 text-indigo-400 border-indigo-500/10"
-                            )} suppressHydrationWarning>
-                                {item.paymentMode === 'CASH' ? <Banknote size={10} /> : <CreditCard size={10} />}
-                                {item.paymentMode}
-                            </span>
-                        </div>
-                        <div className={cn("col-span-3 text-right font-mono font-bold text-sm tracking-tight pr-2",
-                            type === 'INCOME' ? "text-emerald-400" : "text-rose-400"
-                        )} suppressHydrationWarning>
-                            {type === 'INCOME' ? '+' : '-'}{formatCurrency(item.amount)}
-                        </div>
-                        <div className="col-span-1 flex justify-end gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity" suppressHydrationWarning>
-                            <button
-                                onClick={() => handleEdit(item)}
-                                className="text-neutral-400 hover:text-white p-1 rounded-full hover:bg-white/10 transition"
-                                suppressHydrationWarning
-                            >
-                                <Pencil size={16} />
-                            </button>
-                            <button
-                                onClick={() => handleDelete(item.id)}
-                                className="text-neutral-400 hover:text-rose-500 p-1 rounded-full hover:bg-rose-500/10 transition"
-                                suppressHydrationWarning
-                            >
-                                <Trash2 size={16} />
-                            </button>
-                        </div>
+            {/* Data Table */}
+            <div className="w-full transition-colors" suppressHydrationWarning>
+                <div className="w-full overflow-x-auto pb-10" suppressHydrationWarning>
+                    <div className="grid grid-cols-12 text-[10px] uppercase tracking-widest text-neutral-500 px-4 pb-3 border-b border-white/5 font-bold sticky top-0 bg-[#0a0a0a]/95 backdrop-blur-md z-10 pt-2" suppressHydrationWarning>
+                        <div className="col-span-2 pl-2" suppressHydrationWarning>Date</div>
+                        <div className="col-span-4" suppressHydrationWarning>Details</div>
+                        <div className="col-span-2" suppressHydrationWarning>Mode</div>
+                        <div className="col-span-3 text-right pr-2" suppressHydrationWarning>Amount</div>
+                        <div className="col-span-1" suppressHydrationWarning></div>
                     </div>
-                ))}
+
+                    {optimisticData.length === 0 ? (
+                        <div className="text-center py-20 flex flex-col items-center justify-center opacity-40 hover:opacity-100 transition-opacity duration-500" suppressHydrationWarning>
+                            <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4" suppressHydrationWarning>
+                                <Tag size={24} className="text-neutral-500" />
+                            </div>
+                            <p className="text-neutral-500 font-medium" suppressHydrationWarning>No {type.toLowerCase()} found.</p>
+                            <p className="text-[10px] text-neutral-600 mt-1" suppressHydrationWarning>Add a new entry to get started.</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-1 mt-2" suppressHydrationWarning>
+                            {optimisticData.map((item, i) => (
+                                <div
+                                    key={item.id}
+                                    className="grid grid-cols-12 items-center px-2 py-3 rounded-xl hover:bg-white/5 transition duration-200 group border border-transparent hover:border-white/5 relative overflow-hidden"
+                                    suppressHydrationWarning
+                                    style={{ animationDelay: `${i * 50}ms` }}
+                                >
+                                    <div className="col-span-2 text-neutral-400 font-mono font-medium pl-2" suppressHydrationWarning>
+                                        <div className="flex flex-col" suppressHydrationWarning>
+                                            <span className="text-white text-xs font-bold" suppressHydrationWarning>{new Date(item.date).getDate()}</span>
+                                            <span className="text-[9px] uppercase tracking-wider text-neutral-500" suppressHydrationWarning>{new Date(item.date).toLocaleString('default', { month: 'short' })}</span>
+                                        </div>
+                                    </div>
+                                    <div className="col-span-4 text-white truncate pr-4" suppressHydrationWarning>
+                                        <div className="font-bold text-sm tracking-tight text-neutral-200 group-hover:text-white transition-colors" suppressHydrationWarning>
+                                            {type === 'INCOME' ? item.source : item.shopName || 'Unknown'}
+                                        </div>
+                                        <div className="flex items-center gap-2 mt-0.5" suppressHydrationWarning>
+                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-white/5 text-neutral-400 border border-white/5" suppressHydrationWarning>
+                                                {item.category}
+                                            </span>
+                                            {item.note && <span className="text-[10px] text-neutral-600 truncate max-w-[100px]" suppressHydrationWarning>{item.note}</span>}
+                                        </div>
+                                    </div>
+                                    <div className="col-span-2" suppressHydrationWarning>
+                                        <span className={cn(
+                                            "inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border opacity-70 group-hover:opacity-100 transition-opacity",
+                                            item.paymentMode === 'CASH'
+                                                ? "bg-amber-500/10 text-amber-500 border-amber-500/10"
+                                                : "bg-indigo-500/10 text-indigo-400 border-indigo-500/10"
+                                        )} suppressHydrationWarning>
+                                            {item.paymentMode === 'CASH' ? <Banknote size={10} /> : <CreditCard size={10} />}
+                                            {item.paymentMode}
+                                        </span>
+                                    </div>
+                                    <div className={cn("col-span-3 text-right font-mono font-bold text-sm tracking-tight pr-2",
+                                        type === 'INCOME' ? "text-emerald-400" : "text-rose-400"
+                                    )} suppressHydrationWarning>
+                                        {type === 'INCOME' ? '+' : '-'}{formatCurrency(item.amount)}
+                                    </div>
+                                    <div className="col-span-1 flex justify-end gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity" suppressHydrationWarning>
+                                        <button
+                                            onClick={() => handleEdit(item)}
+                                            className="text-neutral-400 hover:text-white p-1 rounded-full hover:bg-white/10 transition"
+                                            suppressHydrationWarning
+                                        >
+                                            <Pencil size={16} />
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(item.id)}
+                                            className="text-neutral-400 hover:text-rose-500 p-1 rounded-full hover:bg-rose-500/10 transition"
+                                            suppressHydrationWarning
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
-        )}
-    </div>
-</div>
         </div >
     );
 }

@@ -17,12 +17,26 @@ model User {
   otp       String?
   otpExpiry DateTime?
   isPaused  Boolean  @default(false)
+  securityPin String?
+
 
   investments Investment[]
   snapshots   Snapshot[]
   goals       Goal[]
   incomes     Income[]
   expenses    Expense[]
+  pushSubscriptions PushSubscription[]
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model FundReference {

@@ -28,6 +28,8 @@ export const viewport: Viewport = {
 
 import { AppLockProvider } from "@/context/AppLockContext";
 import { LockScreen } from "@/components/security/LockScreen";
+import { PinSync } from "@/components/security/PinSync";
+import { NextAuthProvider } from "@/components/NextAuthProvider";
 
 export default function RootLayout({
   children,
@@ -40,10 +42,13 @@ export default function RootLayout({
         suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-neutral-950 text-neutral-100`}
       >
-        <AppLockProvider>
-          <LockScreen />
-          {children}
-        </AppLockProvider>
+        <NextAuthProvider>
+          <AppLockProvider>
+            <LockScreen />
+            <PinSync />
+            {children}
+          </AppLockProvider>
+        </NextAuthProvider>
       </body>
     </html>
   );

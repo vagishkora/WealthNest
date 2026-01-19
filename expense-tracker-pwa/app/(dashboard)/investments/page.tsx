@@ -28,9 +28,6 @@ export default async function InvestmentsPage(props: {
                     <h1 className="text-4xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-white via-neutral-200 to-neutral-500">
                         Portfolio
                     </h1>
-                    <p className="text-neutral-500 text-sm font-medium tracking-wide uppercase mt-1">
-                        Cyber Command Center
-                    </p>
                 </div>
                 <div className="flex items-center gap-3">
                     <Link href="/investments/new" className="group relative px-6 py-3 rounded-full bg-white text-black font-bold text-sm overflow-hidden transition-all hover:scale-105 active:scale-95">

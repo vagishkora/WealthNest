@@ -64,8 +64,7 @@ export function OverviewCard({
 
             <div className="mt-8 pt-6 border-t border-white/5 flex justify-between text-xs text-neutral-400" suppressHydrationWarning>
                 <div className="flex gap-6" suppressHydrationWarning>
-                    <button className="hover:text-white transition uppercase tracking-wider font-medium">Breakdown</button>
-                    <button className="hover:text-white transition uppercase tracking-wider font-medium">Analysis</button>
+                    {/* Buttons removed as per request */}
                 </div>
                 <div suppressHydrationWarning>
                     XIRR: <span className="text-emerald-400 cursor-pointer hover:underline">14.2% (Est)</span>

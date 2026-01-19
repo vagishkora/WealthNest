@@ -84,6 +84,7 @@ export default async function TrackerPage({
                 </div>
 
                 {/* Visual Charts */}
+                {/* Visual Charts */}
                 <div suppressHydrationWarning>
                     <TrackerCharts
                         income={summary.totalIncome}
@@ -94,19 +95,19 @@ export default async function TrackerPage({
 
                 {/* Transaction Tables (Refined Layout) */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8" suppressHydrationWarning>
-                    <div className="bg-white/5 border border-white/5 rounded-2xl p-0 overflow-hidden flex flex-col h-[600px]" suppressHydrationWarning>
+                    <div className="bg-white/5 border border-white/5 rounded-2xl p-0" suppressHydrationWarning>
                         <div className="p-4 bg-emerald-500/5 border-b border-emerald-500/10 flex-shrink-0" suppressHydrationWarning>
                             <h3 className="text-sm font-bold uppercase tracking-wider text-emerald-400">Income Log</h3>
                         </div>
-                        <div className="p-4 flex-1 overflow-y-auto min-h-0" suppressHydrationWarning>
+                        <div className="p-4" suppressHydrationWarning>
                             <TransactionTable type="INCOME" data={summary.incomes} />
                         </div>
                     </div>
-                    <div className="bg-white/5 border border-white/5 rounded-2xl p-0 overflow-hidden flex flex-col h-[600px]" suppressHydrationWarning>
+                    <div className="bg-white/5 border border-white/5 rounded-2xl p-0" suppressHydrationWarning>
                         <div className="p-4 bg-rose-500/5 border-b border-rose-500/10 flex-shrink-0" suppressHydrationWarning>
                             <h3 className="text-sm font-bold uppercase tracking-wider text-rose-400">Expense Log</h3>
                         </div>
-                        <div className="p-4 flex-1 overflow-y-auto min-h-0" suppressHydrationWarning>
+                        <div className="p-4" suppressHydrationWarning>
                             <TransactionTable type="EXPENSE" data={summary.expenses.map(e => ({
                                 ...e,
                                 shopName: e.shopName || undefined

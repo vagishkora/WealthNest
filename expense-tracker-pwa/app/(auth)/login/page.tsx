@@ -76,6 +76,24 @@ export default function LoginPage() {
                         </div>
                     )}
 
+                    {!isLogin && (
+                        <div>
+                            <label className="block text-sm font-medium text-neutral-300">Set App PIN (4 Digits)</label>
+                            <input
+                                name="securityPin"
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                maxLength={4}
+                                required
+                                placeholder="1234"
+                                className="mt-1 block w-full rounded-md border border-neutral-800 bg-neutral-900 px-3 py-2 text-neutral-100 placeholder-neutral-500 focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500 tracking-widest text-center font-bold"
+                                suppressHydrationWarning
+                            />
+                            <p className="text-xs text-neutral-500 mt-1">This PIN will be used to unlock your app.</p>
+                        </div>
+                    )}
+
                     <div>
                         <label className="block text-sm font-medium text-neutral-300">Email</label>
                         <input

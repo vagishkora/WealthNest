@@ -10,12 +10,26 @@ import { cn } from "@/lib/utils"
 import { downloadCSV, flattenAllData } from "@/lib/export/generate-csv"
 import { generatePDF } from "@/lib/export/generate-pdf"
 
+import { useSession } from "next-auth/react"
+import { sendOtp, updateUserPin, resetPinWithOtp } from "@/app/actions/auth"
+
+import { PushManager } from "@/components/PushManager"
+
 export default function SettingsPage() {
+    const { data: session } = useSession()
     const { isSetup, setupLock, removeLock, isBiometricEnabled, isBiometricSupported, enableBiometric, disableBiometric } = useAppLock()
+
+    // State
     const [pin, setPin] = useState("")
     const [confirmPin, setConfirmPin] = useState("")
+    const [otp, setOtp] = useState("")
+
     const [isExporting, setIsExporting] = useState(false)
     const [isOnline, setIsOnline] = useState(true)
+
+    const [isEditingPin, setIsEditingPin] = useState(false)
+    const [isForgotPinMode, setIsForgotPinMode] = useState(false)
+    const [isProcessing, setIsProcessing] = useState(false)
 
     // Online Status
     useEffect(() => {
@@ -36,11 +50,63 @@ export default function SettingsPage() {
         }
     }
 
-    const handleSetPin = () => {
+    const handleSetPin = async () => {
         if (pin.length === 4 && pin === confirmPin) {
+            setIsProcessing(true)
+            // Sync to server if logged in
+            if (session?.user?.email) {
+                await updateUserPin(session.user.email, pin)
+            }
             setupLock(pin)
             setPin("")
             setConfirmPin("")
+            setIsProcessing(false)
+        }
+    }
+
+    const handleChangePinSubmit = async () => {
+        if (pin.length === 4 && pin === confirmPin && session?.user?.email) {
+            setIsProcessing(true)
+            await updateUserPin(session.user.email, pin)
+            setupLock(pin)
+            setIsEditingPin(false)
+            setPin("")
+            setConfirmPin("")
+            setIsProcessing(false)
+            alert("PIN Updated Successfully!")
+        }
+    }
+
+    const handleIntiateForgotPin = async () => {
+        if (session?.user?.email) {
+            setIsProcessing(true)
+            const res = await sendOtp(session.user.email)
+            if (res.success) {
+                setIsForgotPinMode(true)
+                setPin("")
+                setConfirmPin("")
+            } else {
+                alert(res.error || "Failed to send OTP")
+            }
+            setIsProcessing(false)
+        }
+    }
+
+    const handleResetPinSubmit = async () => {
+        if (otp.length === 6 && pin.length === 4 && pin === confirmPin && session?.user?.email) {
+            setIsProcessing(true)
+            const res = await resetPinWithOtp(session.user.email, otp, pin)
+            if (res.success) {
+                setupLock(pin)
+                setIsForgotPinMode(false)
+                setOtp("")
+                setPin("")
+                setConfirmPin("")
+                alert("PIN Reset Successfully!")
+            } else {
+                alert(res.error || "Failed to reset PIN")
+            }
+            setIsProcessing(false)
         }
     }
 
@@ -78,7 +144,7 @@ export default function SettingsPage() {
     }
 
     return (
-        <div className="p-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-neutral-900 via-neutral-950 to-black min-h-screen pb-32 text-white flex flex-col items-center">
+        <div className="p-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-neutral-900 via-neutral-950 to-black min-h-screen pb-32 text-white flex flex-col items-center" suppressHydrationWarning>
             <header className="mb-8 text-center">
                 <h1 className="text-3xl font-bold">
                     <GradientText>Settings</GradientText>
@@ -108,24 +174,8 @@ export default function SettingsPage() {
                             <Switch checked={isSetup} onCheckedChange={(c) => c ? null : handleLockToggle(false)} disabled={!isSetup} />
                         </div>
 
-                        {/* Biometric Toggle */}
-                        {isSetup && (
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-4 h-4 rounded-full border-2 border-neutral-400 flex items-center justify-center">
-                                        <div className="w-2 h-2 rounded-full bg-neutral-400" />
-                                    </div>
-                                    <span>Biometric Unlock</span>
-                                </div>
-                                <Switch
-                                    checked={isBiometricEnabled}
-                                    onCheckedChange={(c) => c ? enableBiometric() : disableBiometric()}
-                                    disabled={!isBiometricSupported}
-                                />
-                            </div>
-                        )}
-
-                        {!isSetup && (
+                        {/* PIN Setup / Management */}
+                        {!isSetup && !isForgotPinMode ? (
                             <div className="bg-white/5 p-4 rounded-xl border border-white/10 space-y-4">
                                 <p className="text-sm text-neutral-300">Set a 4-digit PIN to secure the app.</p>
                                 <div className="flex gap-4">
@@ -147,23 +197,165 @@ export default function SettingsPage() {
                                     />
                                     <button
                                         onClick={handleSetPin}
-                                        disabled={pin.length !== 4 || pin !== confirmPin}
+                                        disabled={pin.length !== 4 || pin !== confirmPin || isProcessing}
                                         className="bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-black font-bold px-4 py-2 rounded-lg transition-colors"
                                     >
-                                        Set PIN
+                                        {isProcessing ? "Saving..." : "Set PIN"}
+                                    </button>
+                                </div>
+                            </div>
+                        ) : null}
+
+                        {isSetup && !isEditingPin && !isForgotPinMode && (
+                            <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl space-y-3">
+                                <div className="flex items-center gap-3">
+                                    <CheckCircle size={18} className="text-emerald-500" />
+                                    <span className="text-sm text-emerald-200">App Lock is active.</span>
+                                </div>
+                                <div className="flex gap-3 pt-2">
+                                    <button
+                                        onClick={() => setIsEditingPin(true)}
+                                        className="text-xs bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 px-3 py-1.5 rounded-lg transition-colors"
+                                    >
+                                        Change PIN
+                                    </button>
+                                    <button
+                                        onClick={handleIntiateForgotPin}
+                                        className="text-xs bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 px-3 py-1.5 rounded-lg transition-colors"
+                                    >
+                                        Forgot PIN?
                                     </button>
                                 </div>
                             </div>
                         )}
 
+                        {/* Change PIN Mode */}
+                        {isEditingPin && (
+                            <div className="bg-white/5 p-4 rounded-xl border border-white/10 space-y-4">
+                                <p className="text-sm font-bold text-white">Change PIN</p>
+                                <div className="flex flex-col gap-3">
+                                    <div className="flex gap-4">
+                                        <input
+                                            type="password"
+                                            placeholder="New PIN"
+                                            maxLength={4}
+                                            value={pin}
+                                            onChange={(e) => setPin(e.target.value.replace(/[^0-9]/g, ''))}
+                                            className="bg-neutral-900 border border-white/20 rounded-lg px-4 py-2 w-full text-center tracking-widest outline-none focus:border-emerald-500"
+                                        />
+                                        <input
+                                            type="password"
+                                            placeholder="Confirm"
+                                            maxLength={4}
+                                            value={confirmPin}
+                                            onChange={(e) => setConfirmPin(e.target.value.replace(/[^0-9]/g, ''))}
+                                            className="bg-neutral-900 border border-white/20 rounded-lg px-4 py-2 w-full text-center tracking-widest outline-none focus:border-emerald-500"
+                                        />
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={handleChangePinSubmit}
+                                            disabled={pin.length !== 4 || pin !== confirmPin || isProcessing}
+                                            className="flex-1 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-black font-bold px-4 py-2 rounded-lg transition-colors"
+                                        >
+                                            {isProcessing ? "Updating..." : "Update PIN"}
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                setIsEditingPin(false);
+                                                setPin("");
+                                                setConfirmPin("");
+                                            }}
+                                            className="px-4 py-2 rounded-lg hover:bg-white/10 text-neutral-400"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Forgot PIN Mode */}
+                        {isForgotPinMode && (
+                            <div className="bg-white/5 p-4 rounded-xl border border-white/10 space-y-4">
+                                <p className="text-sm font-bold text-white">Reset PIN via Email</p>
+                                <p className="text-xs text-neutral-400">An OTP has been sent to {session?.user?.email}</p>
+
+                                <div className="space-y-3">
+                                    <input
+                                        type="text"
+                                        placeholder="Enter 6-digit OTP"
+                                        maxLength={6}
+                                        value={otp}
+                                        onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
+                                        className="w-full bg-neutral-900 border border-white/20 rounded-lg px-4 py-2 text-center tracking-widest outline-none focus:border-emerald-500"
+                                    />
+
+                                    <div className="flex gap-4">
+                                        <input
+                                            type="password"
+                                            placeholder="New PIN"
+                                            maxLength={4}
+                                            value={pin}
+                                            onChange={(e) => setPin(e.target.value.replace(/[^0-9]/g, ''))}
+                                            className="bg-neutral-900 border border-white/20 rounded-lg px-4 py-2 w-full text-center tracking-widest outline-none focus:border-emerald-500"
+                                        />
+                                        <input
+                                            type="password"
+                                            placeholder="Confirm"
+                                            maxLength={4}
+                                            value={confirmPin}
+                                            onChange={(e) => setConfirmPin(e.target.value.replace(/[^0-9]/g, ''))}
+                                            className="bg-neutral-900 border border-white/20 rounded-lg px-4 py-2 w-full text-center tracking-widest outline-none focus:border-emerald-500"
+                                        />
+                                    </div>
+
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={handleResetPinSubmit}
+                                            disabled={otp.length !== 6 || pin.length !== 4 || pin !== confirmPin || isProcessing}
+                                            className="flex-1 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-black font-bold px-4 py-2 rounded-lg transition-colors"
+                                        >
+                                            {isProcessing ? "Verifying..." : "Verify & Reset"}
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                setIsForgotPinMode(false);
+                                                setOtp("");
+                                                setPin("");
+                                                setConfirmPin("");
+                                            }}
+                                            className="px-4 py-2 rounded-lg hover:bg-white/10 text-neutral-400"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+
+                        {/* Biometric Toggle */}
                         {isSetup && (
-                            <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl flex items-center gap-3">
-                                <CheckCircle size={18} className="text-emerald-500" />
-                                <span className="text-sm text-emerald-200">App Lock is active. Data is hidden behind PIN.</span>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-4 h-4 rounded-full border-2 border-neutral-400 flex items-center justify-center">
+                                        <div className="w-2 h-2 rounded-full bg-neutral-400" />
+                                    </div>
+                                    <span>Biometric Unlock</span>
+                                </div>
+                                <Switch
+                                    checked={isBiometricEnabled}
+                                    onCheckedChange={(c) => c ? enableBiometric() : disableBiometric()}
+                                    disabled={!isBiometricSupported}
+                                />
                             </div>
                         )}
                     </div>
                 </GlassCard>
+
+                {/* Notifications Section */}
+                <PushManager />
 
                 {/* Data Management Section */}
                 <GlassCard className="p-6">
@@ -187,7 +379,7 @@ export default function SettingsPage() {
                                     <p className="text-xs text-neutral-400">{isOnline ? "Online & Synced" : "Offline (Changes saved locally)"}</p>
                                 </div>
                             </div>
-                            <div className={cn("px-2 py-1 rounded text-xs font-bold", isOnline ? "bg-emerald-500/20 text-emerald-400" : "bg-rose-500/20 text-rose-400")}>
+                            <div className={cn("px-2 py-1 rounded text-xs font-bold", isOnline ? "bg-emerald-500/20 text-emerald-400" : "bg-rose-500/20 text-rose-400")} suppressHydrationWarning>
                                 {isOnline ? "ACTIVE" : "OFFLINE"}
                             </div>
                         </div>

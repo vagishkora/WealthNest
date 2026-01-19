@@ -10,6 +10,7 @@ const RegisterSchema = z.object({
     email: z.string().email(),
     password: z.string().min(6),
     name: z.string().optional(),
+    securityPin: z.string().length(4).regex(/^\d+$/, "PIN must be 4 digits").optional(),
 })
 
 export async function registerUser(formData: FormData) {
@@ -17,13 +18,14 @@ export async function registerUser(formData: FormData) {
         email: formData.get('email'),
         password: formData.get('password'),
         name: formData.get('name') || undefined,
+        securityPin: formData.get('securityPin') || undefined,
     })
 
     if (!validatedFields.success) {
-        return { error: "Invalid fields" }
+        return { error: "Invalid fields. Check PIN (4 digits) or Password." }
     }
 
-    const { email, password, name } = validatedFields.data
+    const { email, password, name, securityPin } = validatedFields.data
 
     try {
         const existingUser = await prisma.user.findUnique({ where: { email } })
@@ -35,11 +37,21 @@ export async function registerUser(formData: FormData) {
                 email,
                 password: hashedPassword,
                 name: name || email.split('@')[0],
+                securityPin: securityPin || null
             },
         })
         return { success: true }
     } catch (error) {
         return { error: "Failed to register" }
+    }
+}
+
+export async function getUserPin(email: string) {
+    try {
+        const user = await prisma.user.findUnique({ where: { email }, select: { securityPin: true } });
+        return { pin: user?.securityPin };
+    } catch {
+        return { error: "Failed to fetch PIN" };
     }
 }
 
@@ -122,5 +134,44 @@ export async function resetPassword(email: string, otp: string, newPass: string)
         return { success: true }
     } catch (error) {
         return { error: "Failed to reset password" }
+    }
+}
+
+export async function updateUserPin(email: string, newPin: string) {
+    try {
+        await prisma.user.update({
+            where: { email },
+            data: { securityPin: newPin }
+        })
+        return { success: true }
+    } catch (error) {
+        return { error: "Failed to update PIN" }
+    }
+}
+
+export async function resetPinWithOtp(email: string, otp: string, newPin: string) {
+    try {
+        const user = await prisma.user.findUnique({ where: { email } })
+        if (!user) return { error: "User not found" }
+
+        if (!user.otp || !user.otpExpiry || user.otp !== otp) {
+            return { error: "Invalid OTP" }
+        }
+
+        if (new Date() > user.otpExpiry) {
+            return { error: "OTP Expired" }
+        }
+
+        await prisma.user.update({
+            where: { email },
+            data: {
+                securityPin: newPin,
+                otp: null,
+                otpExpiry: null
+            }
+        })
+        return { success: true }
+    } catch (error) {
+        return { error: "Failed to reset PIN" }
     }
 }

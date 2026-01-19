@@ -24,68 +24,49 @@ export function TrackerCharts({ income, expense, categoryBreakdown }: TrackerCha
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8" suppressHydrationWarning>
-            {/* Income vs Expense Bar Chart */}
-            <GlassCard className="h-80 flex flex-col p-6" suppressHydrationWarning>
-                <h3 className="text-sm font-bold uppercase tracking-wider text-neutral-400 mb-6">Cash Flow Analysis</h3>
-                <div className="flex-1 min-h-0" suppressHydrationWarning>
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={barData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                            <XAxis type="number" hide />
-                            <YAxis type="category" dataKey="name" tick={{ fill: '#d4d4d4', fontSize: 12 }} width={80} />
-                            <Tooltip
-                                contentStyle={{ backgroundColor: '#171717', border: '1px solid #333', borderRadius: '8px' }}
-                                itemStyle={{ color: '#fff' }}
-                                formatter={(value: any) => [formatCurrency(Number(value || 0)), '']}
-                            />
-                            <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={40}>
-                                {barData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                                ))}
-                            </Bar>
-                        </BarChart>
-                    </ResponsiveContainer>
-                </div>
+            {/* Cash Flow Analysis */}
+            <GlassCard className="p-6 flex flex-col items-center justify-center min-h-[350px]" suppressHydrationWarning>
+                <h3 className="text-sm font-bold uppercase tracking-wider text-neutral-400 mb-6 self-start">Cash Flow Analysis</h3>
+                <ResponsiveContainer width="100%" height={250}>
+                    <BarChart data={barData}>
+                        <XAxis dataKey="name" stroke="#525252" fontSize={12} tickLine={false} axisLine={false} />
+                        <YAxis stroke="#525252" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val: any) => `₹${val / 1000}k`} />
+                        <Tooltip
+                            contentStyle={{ backgroundColor: "#171717", border: "1px solid #262626", borderRadius: "8px" }}
+                            itemStyle={{ color: "#fff" }}
+                            formatter={(val: any) => [`₹${val}`, 'Amount']}
+                        />
+                        <Bar dataKey="value" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                </ResponsiveContainer>
             </GlassCard>
 
-            {/* Category Pie Chart */}
-            <GlassCard className="h-80 flex flex-col p-6" suppressHydrationWarning>
-                <h3 className="text-sm font-bold uppercase tracking-wider text-neutral-400 mb-6">Expense Breakdown</h3>
-                <div className="flex-1 min-h-0 relative" suppressHydrationWarning>
-                    {categoryBreakdown.length === 0 && (
-                        <div className="absolute inset-0 flex items-center justify-center text-neutral-500 text-xs">
-                            No expenses yet
-                        </div>
-                    )}
-                    <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                            <Pie
-                                data={pieData}
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={60}
-                                outerRadius={80}
-                                paddingAngle={5}
-                                dataKey="value"
-                            >
-                                {pieData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={categoryBreakdown.length > 0 ? COLORS[index % COLORS.length] : '#333'} />
-                                ))}
-                            </Pie>
-                            <Tooltip
-                                contentStyle={{ backgroundColor: '#171717', border: '1px solid #333', borderRadius: '8px' }}
-                                itemStyle={{ color: '#fff' }}
-                                formatter={(value: any) => [formatCurrency(Number(value || 0)), '']}
-                            />
-                            <Legend
-                                verticalAlign="middle"
-                                align="right"
-                                layout="vertical"
-                                iconSize={8}
-                                wrapperStyle={{ fontSize: '10px', color: '#a3a3a3' }}
-                            />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </div>
+            {/* Expense Breakdown */}
+            <GlassCard className="p-6 flex flex-col items-center justify-center min-h-[350px]" suppressHydrationWarning>
+                <h3 className="text-sm font-bold uppercase tracking-wider text-neutral-400 mb-6 self-start">Expense Breakdown</h3>
+                <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                        <Pie
+                            data={pieData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={80}
+                            paddingAngle={5}
+                            dataKey="value"
+                        >
+                            {pieData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                        </Pie>
+                        <Tooltip
+                            contentStyle={{ backgroundColor: "#171717", border: "1px solid #262626", borderRadius: "8px" }}
+                            itemStyle={{ color: "#fff" }}
+                            formatter={(val: any) => [`₹${val}`, 'Amount']}
+                        />
+                        <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                    </PieChart>
+                </ResponsiveContainer>
             </GlassCard>
         </div>
     );

@@ -51,12 +51,12 @@ export function GoalCard({ goal }: { goal: GoalProps }) {
                     </div>
                 </div>
 
-                <div className="flex gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                    <Link href={`/goals/edit/${goal.id}`} className="p-2 text-neutral-400 hover:text-white">
-                        <Edit2 size={16} />
+                <div className="flex gap-2 opacity-100 transition-opacity">
+                    <Link href={`/goals/edit/${goal.id}`} className="p-3 text-neutral-400 hover:text-white bg-white/5 rounded-full">
+                        <Edit2 size={18} />
                     </Link>
-                    <button onClick={handleDelete} className="p-2 text-neutral-400 hover:text-red-500">
-                        <Trash2 size={16} />
+                    <button onClick={handleDelete} className="p-3 text-neutral-400 hover:text-red-500 hover:bg-rose-500/10 rounded-full">
+                        <Trash2 size={18} />
                     </button>
                 </div>
             </div>

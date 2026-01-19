@@ -29,8 +29,10 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "recharts": "^3.6.0",
+    "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
     "use-debounce": "^10.1.0",
+    "web-push": "^3.6.7",
     "xlsx": "^0.18.5",
     "yahoo-finance2": "^3.11.2",
     "zod": "^4.3.5"
@@ -41,9 +43,10 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/web-push": "^3.6.4",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
-    "prisma": "^5.17.0",
+    "prisma": "^5.22.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

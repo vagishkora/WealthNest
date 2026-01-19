@@ -12,9 +12,8 @@ export function FloatingNav() {
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50" suppressHydrationWarning>
             <nav className="flex items-center gap-2 p-2 rounded-full border border-white/10 bg-black/60 backdrop-blur-xl shadow-2xl shadow-black/50" suppressHydrationWarning>
                 <NavItem href="/dashboard" icon={LayoutDashboard} label="Home" />
-                <NavItem href="/analytics" icon={PieChart} label="Analytics" />
-                <NavItem href="/investments" icon={Wallet} label="Invest" />
                 <NavItem href="/tracker" icon={NotebookPen} label="Tracker" />
+                <NavItem href="/investments" icon={Wallet} label="Invest" />
                 <NavItem href="/goals" icon={Target} label="Goals" />
                 <NavItem href="/profile" icon={User} label="Profile" />
                 <NavItem href="/settings" icon={Cog} label="Settings" />
