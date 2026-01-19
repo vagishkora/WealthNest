@@ -288,8 +288,8 @@ export function TransactionTable({ type, data }: TransactionTableProps) {
                 <div className="w-full overflow-x-auto pb-10" suppressHydrationWarning>
                     <div className="grid grid-cols-12 text-[10px] uppercase tracking-widest text-neutral-500 px-4 pb-3 border-b border-white/5 font-bold sticky top-0 bg-[#0a0a0a]/95 backdrop-blur-md z-10 pt-2" suppressHydrationWarning>
                         <div className="col-span-2 pl-2" suppressHydrationWarning>Date</div>
-                        <div className="col-span-4" suppressHydrationWarning>Details</div>
-                        <div className="col-span-2" suppressHydrationWarning>Mode</div>
+                        <div className="col-span-6 md:col-span-4" suppressHydrationWarning>Details</div>
+                        <div className="col-span-2 hidden md:block" suppressHydrationWarning>Mode</div>
                         <div className="col-span-3 text-right pr-2" suppressHydrationWarning>Amount</div>
                         <div className="col-span-1" suppressHydrationWarning></div>
                     </div>
@@ -317,18 +317,18 @@ export function TransactionTable({ type, data }: TransactionTableProps) {
                                             <span className="text-[9px] uppercase tracking-wider text-neutral-500" suppressHydrationWarning>{new Date(item.date).toLocaleString('default', { month: 'short' })}</span>
                                         </div>
                                     </div>
-                                    <div className="col-span-4 text-white truncate pr-4" suppressHydrationWarning>
-                                        <div className="font-bold text-sm tracking-tight text-neutral-200 group-hover:text-white transition-colors" suppressHydrationWarning>
+                                    <div className="col-span-6 md:col-span-4 text-white truncate pr-4" suppressHydrationWarning>
+                                        <div className="font-bold text-sm tracking-tight text-neutral-200 group-hover:text-white transition-colors truncate" suppressHydrationWarning>
                                             {type === 'INCOME' ? item.source : item.shopName || 'Unknown'}
                                         </div>
                                         <div className="flex items-center gap-2 mt-0.5" suppressHydrationWarning>
-                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-white/5 text-neutral-400 border border-white/5" suppressHydrationWarning>
+                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-white/5 text-neutral-400 border border-white/5 flex-shrink-0" suppressHydrationWarning>
                                                 {item.category}
                                             </span>
-                                            {item.note && <span className="text-[10px] text-neutral-600 truncate max-w-[100px]" suppressHydrationWarning>{item.note}</span>}
+                                            {item.note && <span className="text-[10px] text-neutral-600 truncate max-w-[80px] md:max-w-[100px]" suppressHydrationWarning>{item.note}</span>}
                                         </div>
                                     </div>
-                                    <div className="col-span-2" suppressHydrationWarning>
+                                    <div className="col-span-2 hidden md:block" suppressHydrationWarning>
                                         <span className={cn(
                                             "inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border opacity-70 group-hover:opacity-100 transition-opacity",
                                             item.paymentMode === 'CASH'
