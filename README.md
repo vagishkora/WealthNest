@@ -2,7 +2,7 @@
 
 WealthNest is a state-of-the-art, Proressive Web App (PWA) designed to give you a 360-degree view of your financial health. From real-time stock tracking to automated mutual fund syncing via CAS statements, WealthNest combines powerful analytics with a premium, glassmorphic UI.
 
-![WealthNest Dashboard](https://images.unsplash.com/photo-1611974714158-f89914041763?auto=format&fit=crop&q=80&w=1200&h=600) *Sample Dashboard Interface Concept*
+![WealthNest Dashboard](https://wealth-nest.vercel.app/) *Sample Dashboard Interface Concept*
 
 ---
 
